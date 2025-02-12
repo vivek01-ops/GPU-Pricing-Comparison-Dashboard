@@ -20,5 +20,5 @@ selenium
 webdriver-manager
 
 # selenium
-selenium.webdriver.chrome.service
-webdriver_manager.chrome
+# selenium.webdriver.chrome.service
+# webdriver_manager.chrome
