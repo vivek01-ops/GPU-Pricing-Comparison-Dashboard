@@ -13,6 +13,13 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from streamlit_autorefresh import st_autorefresh
 
+
+str.set_page_config(
+    page_title="GPU Cloud Pricing Comparison",
+    page_icon=":computer:",
+    layout="wide",
+    initial_sidebar_state="expanded",)
+
 refresh_interval = 60 * 1000  # 60 seconds
 st_autorefresh(interval=refresh_interval, key="refresh")
 
@@ -413,31 +420,31 @@ def get_webdriver():
     return webdriver.Chrome(options=options)
 
 
-def scrape_oracle_gpu_pricing():
-    url = "https://www.oracle.com/in/cloud/price-list/"
-    driver = get_webdriver()
-    driver.get(url)
+# def scrape_oracle_gpu_pricing():
+#     url = "https://www.oracle.com/in/cloud/price-list/"
+#     driver = get_webdriver()
+#     driver.get(url)
 
-    try:
-        WebDriverWait(driver, 3).until(
-            EC.presence_of_element_located((By.XPATH, "//table[contains(@aria-labelledby, 'compute-gpu')]"))
-        )
-        soup = BeautifulSoup(driver.page_source, "html.parser")
-    finally:
-        driver.quit()
+#     try:
+#         WebDriverWait(driver, 3).until(
+#             EC.presence_of_element_located((By.XPATH, "//table[contains(@aria-labelledby, 'compute-gpu')]"))
+#         )
+#         soup = BeautifulSoup(driver.page_source, "html.parser")
+#     finally:
+#         driver.quit()
 
-    rows = soup.select("table[aria-labelledby='compute-gpu'] tbody tr")
-    pricing_data = [
-        {
-            "Shape": row.find_all(["th", "td"])[0].get_text(strip=True),
-            "GPUs": row.find_all(["th", "td"])[1].get_text(strip=True),
-            "Architecture": row.find_all(["th", "td"])[2].get_text(strip=True),
-            "Network": row.find_all(["th", "td"])[3].get_text(strip=True),
-            "GPU Price Per Hour (INR)": row.find_all(["th", "td"])[4].get_text(strip=True).replace("₹", "").strip()
-        }
-        for row in rows if len(row.find_all(["th", "td"])) >= 5
-    ]
-    return pricing_data
+#     rows = soup.select("table[aria-labelledby='compute-gpu'] tbody tr")
+#     pricing_data = [
+#         {
+#             "Shape": row.find_all(["th", "td"])[0].get_text(strip=True),
+#             "GPUs": row.find_all(["th", "td"])[1].get_text(strip=True),
+#             "Architecture": row.find_all(["th", "td"])[2].get_text(strip=True),
+#             "Network": row.find_all(["th", "td"])[3].get_text(strip=True),
+#             "GPU Price Per Hour (INR)": row.find_all(["th", "td"])[4].get_text(strip=True).replace("₹", "").strip()
+#         }
+#         for row in rows if len(row.find_all(["th", "td"])) >= 5
+#     ]
+#     return pricing_data
 
 def scrape_genesis_gpu_pricing():
     url = "https://www.genesiscloud.com/products/nvidia-hgx-h100"
@@ -898,20 +905,20 @@ def main():
         df_n = pd.DataFrame(nebius_data, columns=['GPU Model', 'GPU Count', 'Price', 'GPU RAM', 'Source'])
         combined_df = pd.concat([combined_df, df_n], ignore_index=True)
     
-    pricing_data = scrape_oracle_gpu_pricing()
-    if pricing_data:
-        df = pd.DataFrame(pricing_data)
-        df = df[df["GPUs"].str.contains("H100|L40S", case=False, na=False)]
-        df["GPU Count"] = df["GPUs"].str.extract(r'(\d+)x').astype(float).astype("Int64")
-        df["GPU RAM"] = df["GPUs"].str.extract(r'(\d+GB)')
-        df["GPU Model"] = df["GPUs"].str.replace(r'\d+x|\d+GB', '', regex=True).str.strip()
-        df.loc[df["GPU Model"].str.contains("H100", case=False, na=False), "GPU Model"] = "Baremetal H100 HGX"
-        df.loc[df["GPU Model"].str.contains("L40S", case=False, na=False), "GPU Model"] = "Bare Metal L40S"
-        df["Price"] = df["GPU Price Per Hour (INR)"].astype(float) * INR_TO_USD
-        df["Price"] = df["Price"].apply(lambda x: f"${x:.2f}")
-        df["Source"] = "Oracle"
-        df = df[['GPU Model', 'GPU Count', 'Price', 'GPU RAM', 'Source']]
-        combined_df = pd.concat([combined_df, df], ignore_index=True)
+    # pricing_data = scrape_oracle_gpu_pricing()
+    # if pricing_data:
+    #     df = pd.DataFrame(pricing_data)
+    #     df = df[df["GPUs"].str.contains("H100|L40S", case=False, na=False)]
+    #     df["GPU Count"] = df["GPUs"].str.extract(r'(\d+)x').astype(float).astype("Int64")
+    #     df["GPU RAM"] = df["GPUs"].str.extract(r'(\d+GB)')
+    #     df["GPU Model"] = df["GPUs"].str.replace(r'\d+x|\d+GB', '', regex=True).str.strip()
+    #     df.loc[df["GPU Model"].str.contains("H100", case=False, na=False), "GPU Model"] = "Baremetal H100 HGX"
+    #     df.loc[df["GPU Model"].str.contains("L40S", case=False, na=False), "GPU Model"] = "Bare Metal L40S"
+    #     df["Price"] = df["GPU Price Per Hour (INR)"].astype(float) * INR_TO_USD
+    #     df["Price"] = df["Price"].apply(lambda x: f"${x:.2f}")
+    #     df["Source"] = "Oracle"
+    #     df = df[['GPU Model', 'GPU Count', 'Price', 'GPU RAM', 'Source']]
+    #     combined_df = pd.concat([combined_df, df], ignore_index=True)
 
 
     pricing_data = scrape_genesis_gpu_pricing()

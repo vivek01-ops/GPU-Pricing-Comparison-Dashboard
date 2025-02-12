@@ -22,3 +22,26 @@ webdriver-manager
 # selenium
 # selenium.webdriver.chrome.service
 # webdriver_manager.chrome
+# Web scraping dependencies
+beautifulsoup4
+lxml
+requests
+urllib3
+
+# Data processing and formatting
+pandas
+numpy
+babel
+python-dateutil
+
+# Streamlit for dashboard
+streamlit
+streamlit-autorefresh
+
+# Miscellaneous utilities
+regex
+selenium
+webdriver-manager
+
+# Selenium dependencies
+chromedriver-autoinstaller
