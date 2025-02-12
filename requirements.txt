@@ -18,3 +18,7 @@ streamlit-autorefresh
 regex
 selenium
 webdriver-manager
+
+# selenium
+selenium.webdriver.chrome.service
+webdriver_manager.chrome
